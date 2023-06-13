@@ -7,16 +7,16 @@
 #define _TYPES_
 
 typedef char				int8;
-typedef unsigned char		uint8;
+typedef unsigned char			uint8;
 
 typedef short				int16;
-typedef unsigned short		uint16;
+typedef unsigned short			uint16;
 
-typedef int					int32;
-typedef unsigned int		uint32;
+typedef int				int32;
+typedef unsigned int			uint32;
 
 typedef long long			int64;
-typedef unsigned long long	uint64;
+typedef unsigned long long		uint64;
 
 #endif
 #ifndef NULL
@@ -54,7 +54,7 @@ typedef struct _pool
 
 typedef struct _pool_tracker
 {
-	handle_container	data;
+	handle_container		data;
 	uint32				length;
 	uint32				size;
 }pool_tracker;
@@ -69,12 +69,12 @@ typedef struct _pool_void_properties
 {
 	uint32				numVoids;
 	uint64				totalSpace;
-	struct _sv_props	largestVoid;
+	struct _sv_props		largestVoid;
 }void_info, *void_info_handle;
 
 typedef struct _block
 {
-	handle_container	self;
+	handle_container		self;
 	uint8				flags;
 	pool_handle			pool;	
 	handle				elements;
