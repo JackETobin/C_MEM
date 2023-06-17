@@ -201,7 +201,7 @@ uint8 __pool__voidshrink(struct _sv_props voidProps, uint64 size)
 block_handle __pool__voidfill(pool_handle pool, uint64 size)
 {
 	struct _sv_props voidProps = { 0 };
-	for (uint32 i = 0; (handle)pool->voids + i < (handle)pool->next; i++)
+	for (uint32 i = 0; ((handle_container)pool->voids + i) < (handle_container)pool->next; i++)
 	{
 		voidProps = __pool__voidprops(*((handle_container)pool->voids + i));
 		if (voidProps.voidSize >= size)
