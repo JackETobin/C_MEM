@@ -295,7 +295,7 @@ uint8 FreeBlock(block_handle* block)
 {
 	__pool__voidgenerator((handle_container)*block);
 	(*block)->flags |= _BLOCK_FREE_;
-	//*block = NULL;
+	*block = NULL;
 	return 0;
 }
 
