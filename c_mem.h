@@ -89,8 +89,8 @@ block_handle BuildBlock(pool_handle pool, uint32 numElements, uint64 elementSize
 uint8 FreeBlock(block_handle* block);
 
 uint64 BlockSize(block_handle block);
-uint64 ElementSize(block_handle block);
 uint32 NumElements(block_handle block);
+uint64 ElementSize(block_handle block);
 handle GetElementAt(block_handle block, uint32 element);
 
 uint8 Push(block_handle block, handle data);
