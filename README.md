@@ -109,4 +109,14 @@ uint8 **RotateLast(block_handle block)**
 Plans for the future:
 =
 
-At some point I'd like to add multi-threading, resizeable blocks, and resizeable pools to the system. However, since this system was written with a specific purpose in mind, I will first implement this system and make sure that it works the way that it's expected to work. At some point in the future I might come back and add those three features.
+At some point I'd like to add multi-threading, however, since this system was written with a specific purpose in mind, I will first implement this system and make sure that it works the way that it's expected to work. 
+
+As this project continues to expand and become more practical I will add items to the addition and possible addition lists.
+
+**Future Additions:**
+- ~~Indexing from zero instead of 1~~
+- Defragmentation function
+
+**Possible Additions:**
+- Resizeable blocks
+- Resizeable pools
