@@ -116,6 +116,7 @@ As this project continues to expand and become more practical I will add items t
 **Future Additions:**
 - ~~Indexing from zero instead of 1~~
 - Defragmentation function
+- Code annotations
 
 **Possible Additions:**
 - Resizeable blocks
