@@ -88,7 +88,7 @@ uint8 **Pop(block_handle block)**
 
 uint8 **Set(block_handle block, handle data, uint32 position)**
 
-- Takes a block handle, a pointer to the data that you wish to be added into the block, and the position at which you'd like the data to be written. Note that if the position is less than 1 or greater than the number of elements in the structure, nothing will be written.
+- Takes a block handle, a pointer to the data that you wish to be added into the block, and the position at which you'd like the data to be written. Note that if the position is less than 0 or greater than or equal to the number of elements in the structure, nothing will be written.
 
 uint8 **ZeroElement(block_handle block, uint32 position)**
 
