@@ -267,23 +267,26 @@ void_info PoolVoidInfo(pool_handle pool)
 
 block_handle BuildBlock(pool_handle pool, uint32 numElements, uint64 eleSizeBytes)
 {
-	uint64 blockSize = sizeof(struct _block) + (numElements * _SIZE_VP_) + (numElements * eleSizeBytes) + _SIZE_VP_;
+	uint64 blockSize = sizeof(struct _block) + (numElements * _SIZE_VP_) + (numElements * eleSizeBytes);
+	if (!numElements)
+		blockSize = sizeof(struct _block) + _SIZE_VP_;
+
 	block_handle temp = __pool__voidfill(pool, blockSize);
 	if (!temp)
 	{
 		temp = *(handle_container)pool->next;
 		*(handle_container)pool->next += blockSize;
 	}
-	handle selfPtr = (handle)&temp->elements + ((numElements + 1) * _SIZE_VP_) + (numElements * eleSizeBytes);
-	handle dataPtr = (handle)&temp->elements + ((numElements + 1) * _SIZE_VP_);
+	handle selfPtr = (handle)&temp->elements + ((numElements) * _SIZE_VP_) + (numElements * eleSizeBytes);
+	handle dataPtr = (handle)&temp->elements + ((numElements) * _SIZE_VP_);
 
 	temp->self = selfPtr;
 	*(handle_container)temp->self = &temp->self;
 	temp->flags = 0;
 	temp->pool = pool;
 	temp->elements = dataPtr;
-	for (uint32 i = 1; i <= numElements; i++)
-		*(&temp->elements + i) = dataPtr + ((i - 1) * eleSizeBytes);
+	for (uint32 i = 0; i <= numElements; i++)
+		*(&temp->elements + i) = dataPtr + ((i) * eleSizeBytes);
 
 	return temp;
 }
@@ -292,7 +295,7 @@ uint8 FreeBlock(block_handle* block)
 {
 	__pool__voidgenerator((handle_container)*block);
 	(*block)->flags |= _BLOCK_FREE_;
-	*block = NULL;
+	//*block = NULL;
 	return 0;
 }
 
@@ -302,21 +305,21 @@ uint64 BlockSize(block_handle block)
 	return blockSize;
 }
 
-uint64 ElementSize(block_handle block)
-{
-	uint64 elementSize = (handle)block->self - *(handle_container)(&block->elements + NumElements(block));
-	return elementSize;
-}
-
 uint32 NumElements(block_handle block)
 {
-	uint32 numElements = ((void*)block->elements - (void*)(&block->elements) - _SIZE_VP_) / _SIZE_VP_;
+	uint32 numElements = ((void*)block->elements - (void*)(&block->elements)) / _SIZE_VP_;
 	return numElements;
+}
+
+uint64 ElementSize(block_handle block)
+{
+	uint64 elementSize = ((handle)block->self - (handle)block->elements) / NumElements(block);
+	return elementSize;
 }
 
 handle GetElementAt(block_handle block, uint32 element)
 {
-	if (element < 1 || element > NumElements(block))
+	if (element < 0 || element > (NumElements(block) - 1))
 		return NULL;
 	handle elementHandle = *(handle_container)(&block->elements + element);
 	return elementHandle;
@@ -362,7 +365,7 @@ uint8 Pop(block_handle block)
 
 uint8 Set(block_handle block, handle data, uint32 position)
 {
-	if (position < 1 || position > NumElements(block))
+	if (position < 0 || position > (NumElements(block) - 1))
 		return _FAILURE_;
 	uint64 elementSize = ElementSize(block);
 	for (uint64 i = 0; i < elementSize; i++)
@@ -372,7 +375,7 @@ uint8 Set(block_handle block, handle data, uint32 position)
 
 uint8 ZeroElement(block_handle block, uint32 position)
 {
-	if (position < 1 || position > NumElements(block))
+	if (position < 0 || position > (NumElements(block) - 1))
 		return _FAILURE_;
 	uint64 elementSize = ElementSize(block);
 	for (uint64 i = 0; i < elementSize; i++)
