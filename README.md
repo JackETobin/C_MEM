@@ -76,7 +76,7 @@ uint32 **NumElements(block_handle block)**
 
 handle **GetElementAt(block_handle block, uint32 element)**
 
-- Takes a block handle and a desired postition, returns a pointer to the data at the desired position. Note: ELEMENT INDEXING STARTS AT 1, NOT 0. Any input positions less than 1 or greater than the number of elements in the structure will return a NULL pointer.
+- Takes a block handle and a desired postition, returns a pointer to the data at the desired position. Any input positions less than 0 or greater than or equal to the number of elements in the structure will return a NULL pointer.
 
 uint8 **Push(block_handle block, handle data)**
 
