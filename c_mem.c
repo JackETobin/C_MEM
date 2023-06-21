@@ -215,6 +215,49 @@ block_handle __pool__voidfill(pool_handle pool, uint64 size)
 	return voidProps.voidPtr;
 }
 
+handle __pool__getfirstvoid(pool_handle pool)
+{
+	handle firstVoid = *(handle_container)pool->voids;
+	uint32 numVoids = (pool->next - pool->voids) / _SIZE_VP_;
+
+	for (uint32 i = 1; i < numVoids; i++)
+		if (*((handle_container)pool->voids + i) < (handle)firstVoid)
+			(handle)firstVoid = *((handle_container)pool->voids + i);
+
+	return firstVoid;
+}
+
+handle __pool__shiftblock(handle writeTarget, handle_container blockAddrContainer, uint32 numElements, uint64 sizeElements)
+{
+	handle blockAddr = *blockAddrContainer;
+	uint64 blockSize = BlockSize((block_handle)blockAddr);
+
+	uint64 dataBegin = ((block_handle)blockAddr)->elements - blockAddr - 1;
+	uint64 dataEnd = dataBegin + (numElements * sizeElements);
+
+	*(handle_container)((block_handle)blockAddr)->container = writeTarget;
+	while (dataBegin++ < dataEnd)
+		*((uint8*)writeTarget + dataBegin) = *((uint8*)blockAddr + dataBegin);
+
+	*blockAddrContainer = writeTarget;
+	writeTarget += blockSize;
+	return writeTarget;
+}
+
+uint8 __pool__rebuildblock(block_handle block, uint32 numElements, uint64 sizeElements)
+{
+	handle selfPtr = (handle)&block->elements + ((numElements)*_SIZE_VP_) + (numElements * sizeElements);
+	handle dataPtr = (handle)&block->elements + ((numElements)*_SIZE_VP_);
+	if (selfPtr == &block->elements)
+		selfPtr += _SIZE_VP_;
+
+	block->self = selfPtr;
+	*(handle_container)block->self = &block->self;
+	block->elements = dataPtr;
+	for (uint32 i = 1; i < numElements; i++)
+		*(&block->elements + i) = dataPtr + (i * sizeElements);
+}
+
 pool_handle OpenPool(uint32 sizeMB)
 {
 	uint64 sizeBytes = _SIZE_MB_ * sizeMB;
@@ -241,6 +284,33 @@ uint8 ClosePool(pool_handle* pool)
 	__pool__close(*pool);
 	*pool = NULL;
 	return 0;
+}
+
+uint8 ConsolidatePool(pool_handle pool)
+{
+	uint64 sizeElements;
+	uint32 numElements;
+	block_handle nextBlock;
+
+	handle writeTarget = __pool__getfirstvoid(pool);
+	block_handle currentBlock = (block_handle)((*(handle_container)writeTarget) + _SIZE_VP_);
+	
+	while ((handle)currentBlock < *((handle_container)pool->next))
+	{
+		nextBlock = (block_handle)((*(handle_container)currentBlock) + _SIZE_VP_);
+		while (nextBlock < *((handle_container)pool->next) && nextBlock->flags & _BLOCK_FREE_)
+			nextBlock = (block_handle)((*(handle_container)nextBlock) + _SIZE_VP_);
+		
+		sizeElements = ElementSize(currentBlock);
+		numElements = NumElements(currentBlock);
+
+		writeTarget = __pool__shiftblock(writeTarget, &currentBlock, numElements, sizeElements);
+		__pool__rebuildblock(currentBlock, numElements, sizeElements);
+		currentBlock = nextBlock;
+	}
+	*((handle_container)pool->next) = writeTarget;
+	pool->voids = pool->next;
+	return _SUCCESS_;
 }
 
 void_info PoolVoidInfo(pool_handle pool)
