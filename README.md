@@ -25,7 +25,7 @@ Types
 
 **block_handle**
 
-- Handle to a block that is located in a pool. Contains a double pointer to self, status flags, a pointer to its parent pool, and a double pointer to the elements.
+- Handle to a block that is located in a pool. Contains a double pointer to self, status flags, a pointer to its parent pool, a pointer to the container of the block_handle, and a double pointer to the elements.
 
 **void_info**
 
@@ -50,6 +50,10 @@ uint8 __ClosePool(pool_handle* pool)__
 
 - Frees the pool associated with the handle fed into the function. Note that the function takes a pointer to the handle, this is so that the handle can be zero'd out after having been freed.
       
+uint8 **ConsolidatePool(pool_handle pool)**
+
+- Consolidates blocks such that all blocks are moved toward the front of the pool to remove voids that might exist between the blocks. This function is taking the place of a proper defrag function since the data types are not stored in the block structures, and because there is no reason to sort the blocks for my current application. If anyone who might use this would like to see a version of this that organizes the blocks in a particular way, I'm happy to accommodate.
+  
 void_info **PoolVoidInfo(pool_handle pool)**
 
 - Query's the input memory pool for information on voids in mememory. Voids are defined as areas inn memory where blocks which have been freed and the space has not yet been reallocated. Will return a void_info struct containing the total number of voids in the pool, the total free space located between blocks, the largest contiguous void, and the address of the largest contiguous void.
@@ -115,7 +119,7 @@ As this project continues to expand and become more practical I will add items t
 
 **Future Additions:**
 - ~~Indexing from zero instead of 1~~
-- Defragmentation function
+- ~~Defragmentation function~~
 - Code annotations
 
 **Possible Additions:**
