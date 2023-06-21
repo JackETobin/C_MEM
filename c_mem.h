@@ -83,6 +83,7 @@ typedef struct _block
 
 pool_handle OpenPool(uint32 sizeMB);
 uint8 ClosePool(pool_handle* pool);
+uint8 ConsolidatePool(pool_handle pool);
 void_info PoolVoidInfo(pool_handle pool);
 
 block_handle BuildBlock(pool_handle pool, uint32 numElements, uint64 elementSizeByes);
