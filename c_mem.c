@@ -335,7 +335,7 @@ void_info PoolVoidInfo(pool_handle pool)
 	return voidInfo;
 }
 
-block_handle BuildBlock(pool_handle pool, uint32 numElements, uint64 eleSizeBytes)
+block_handle BuildBlock(handle containerHandle, pool_handle pool, uint32 numElements, uint64 eleSizeBytes)
 {
 	uint64 blockSize = sizeof(struct _block) + (numElements * _SIZE_VP_) + (numElements * eleSizeBytes);
 	if (!numElements)
@@ -349,14 +349,17 @@ block_handle BuildBlock(pool_handle pool, uint32 numElements, uint64 eleSizeByte
 	}
 	handle selfPtr = (handle)&temp->elements + ((numElements) * _SIZE_VP_) + (numElements * eleSizeBytes);
 	handle dataPtr = (handle)&temp->elements + ((numElements) * _SIZE_VP_);
+	if (selfPtr == &temp->elements)
+		selfPtr += _SIZE_VP_;
 
 	temp->self = selfPtr;
 	*(handle_container)temp->self = &temp->self;
 	temp->flags = 0;
 	temp->pool = pool;
+	temp->container = containerHandle;
 	temp->elements = dataPtr;
-	for (uint32 i = 0; i <= numElements; i++)
-		*(&temp->elements + i) = dataPtr + ((i) * eleSizeBytes);
+	for (uint32 i = 1; i < numElements; i++)
+		*(&temp->elements + i) = dataPtr + (i * eleSizeBytes);
 
 	return temp;
 }
@@ -383,6 +386,8 @@ uint32 NumElements(block_handle block)
 
 uint64 ElementSize(block_handle block)
 {
+	if (!NumElements(block))
+		return (uint64)0;
 	uint64 elementSize = ((handle)block->self - (handle)block->elements) / NumElements(block);
 	return elementSize;
 }
