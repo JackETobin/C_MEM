@@ -76,7 +76,8 @@ typedef struct _block
 {
 	handle_container		self;
 	uint8				flags;
-	pool_handle			pool;	
+	pool_handle			pool;
+	handle				container;
 	handle				elements;
 } *block_handle;
 #define _SIZE_BLOCK_MIN_ sizeof(struct _block) + (4 * _SIZE_VP_)
@@ -86,7 +87,7 @@ uint8 ClosePool(pool_handle* pool);
 uint8 ConsolidatePool(pool_handle pool);
 void_info PoolVoidInfo(pool_handle pool);
 
-block_handle BuildBlock(pool_handle pool, uint32 numElements, uint64 elementSizeByes);
+block_handle BuildBlock(handle container, pool_handle pool, uint32 numElements, uint64 elementSizeByes);
 uint8 FreeBlock(block_handle* block);
 
 uint64 BlockSize(block_handle block);
