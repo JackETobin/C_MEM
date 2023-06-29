@@ -48,6 +48,8 @@ void __pool__set()
 {
 	atexit(__pool__clear);
 	_all_pools.data = malloc(_POOL_TRACK_CHUNK_);
+	if (!_all_pools.data)
+		return;
 	_all_pools.length = _POOL_TRACK_CHUNK_;
 	_all_pools.size = 0;
 }
@@ -55,6 +57,8 @@ void __pool__set()
 void __pool__expand()
 {
 	handle_container temp = malloc(_all_pools.length + _POOL_TRACK_CHUNK_);
+	if (!temp)
+		return;
 	for (int32 i = 0; i < _all_pools.size; i++)
 		*((handle_container)temp + i) = *((handle_container)_all_pools.data + i);
 	free(_all_pools.data);
@@ -221,13 +225,13 @@ handle __pool__getfirstvoid(pool_handle pool)
 	uint32 numVoids = (pool->next - pool->voids) / _SIZE_VP_;
 
 	for (uint32 i = 1; i < numVoids; i++)
-		if (*((handle_container)pool->voids + i) < (handle)firstVoid)
-			(handle)firstVoid = *((handle_container)pool->voids + i);
+		if (*((handle_container)pool->voids + i) < firstVoid)
+			firstVoid = *((handle_container)pool->voids + i);
 
 	return firstVoid;
 }
 
-handle __pool__shiftblock(handle writeTarget, handle_container blockAddrContainer, uint32 numElements, uint64 sizeElements)
+handle __pool__shiftblock(handle writeTarget, block_handle_container blockAddrContainer, uint32 numElements, uint64 sizeElements)
 {
 	handle blockAddr = *blockAddrContainer;
 	uint64 blockSize = BlockSize((block_handle)blockAddr);
@@ -256,6 +260,8 @@ uint8 __pool__rebuildblock(block_handle block, uint32 numElements, uint64 sizeEl
 	block->elements = dataPtr;
 	for (uint32 i = 1; i < numElements; i++)
 		*(&block->elements + i) = dataPtr + (i * sizeElements);
+
+	return _SUCCESS_;
 }
 
 pool_handle OpenPool(uint32 sizeMB)
@@ -264,6 +270,9 @@ pool_handle OpenPool(uint32 sizeMB)
 	uint64 zeroIterator = sizeBytes / _SIZE_INT64_;
 
 	handle poolHandle = malloc(sizeBytes);
+	if (!poolHandle)
+		return poolHandle;
+
 	while (zeroIterator--)
 		*((uint64*)poolHandle + zeroIterator) = 0;
 	
@@ -298,13 +307,13 @@ uint8 ConsolidatePool(pool_handle pool)
 	while ((handle)currentBlock < *((handle_container)pool->next))
 	{
 		nextBlock = (block_handle)((*(handle_container)currentBlock) + _SIZE_VP_);
-		while (nextBlock < *((handle_container)pool->next) && nextBlock->flags & _BLOCK_FREE_)
+		while ((handle)nextBlock < *((handle_container)pool->next) && nextBlock->flags & _BLOCK_FREE_)
 			nextBlock = (block_handle)((*(handle_container)nextBlock) + _SIZE_VP_);
 		
 		sizeElements = ElementSize(currentBlock);
 		numElements = NumElements(currentBlock);
 
-		writeTarget = __pool__shiftblock(writeTarget, &currentBlock, numElements, sizeElements);
+		writeTarget = __pool__shiftblock(writeTarget, (block_handle_container)&currentBlock, numElements, sizeElements);
 		__pool__rebuildblock(currentBlock, numElements, sizeElements);
 		currentBlock = nextBlock;
 	}
@@ -450,7 +459,7 @@ uint8 Set(block_handle block, handle data, uint32 position)
 
 uint8 ZeroElement(block_handle block, uint32 position)
 {
-	if (position < 0 || position > (NumElements(block) - 1))
+	if (position < 0 || position >(NumElements(block) - 1))
 		return _FAILURE_;
 	uint64 elementSize = ElementSize(block);
 	for (uint64 i = 0; i < elementSize; i++)
@@ -460,7 +469,6 @@ uint8 ZeroElement(block_handle block, uint32 position)
 
 uint8 ZeroBlock(block_handle block)
 {
-	uint64 elementSize = ElementSize(block);
 	handle shiftStop = **(handle_container*)block->self;
 
 	uint64 i = 0;

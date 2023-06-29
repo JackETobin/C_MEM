@@ -85,14 +85,7 @@ int WINAPI WinMain
         testData++;
     }
     
-    ConsolidatePool(testPool);
-    testPoolVoidInfo = PoolVoidInfo(testPool);
-
-    uint32 dist1 = (handle)testBlock2 - (handle)zeroBlock - BlockSize(zeroBlock);
-    uint32 dist2 = (handle)testBlock4 - (handle)testBlock2 - BlockSize(testBlock2);
-    uint32 dist3 = (handle)testBlock6 - (handle)testBlock4 - BlockSize(testBlock4);
-    uint32 dist4 = (handle)testBlock7 - (handle)testBlock6 - BlockSize(testBlock6);
-   
+    OutputDebugStringA("\nPRE CONSOLIDATION: \n\n");
     uint64 combinedSize = 0;
     char buffer[2 * sizeof(uint32)];
     OutputDebugStringA("Zero Block: \n");
@@ -129,6 +122,60 @@ int WINAPI WinMain
     }
     OutputDebugStringA("Block7: \n");
     uint64 testBlock7Size = BlockSize(testBlock7);
+    combinedSize += testBlock7Size;
+    for (uint32 i = 0; i < NumElements(testBlock7); i++)
+    {
+        OutputDebugStringA(itoa(*(uint32*)GetElementAt(testBlock7, i), buffer, 10));
+        OutputDebugStringA("\n");
+    }
+
+    ConsolidatePool(testPool);
+    testPoolVoidInfo = PoolVoidInfo(testPool);
+
+    block_handle testBlock9 = BuildBlock(&testBlock9, testPool, 6, sizeof(uint32));
+
+    uint32 dist1 = (handle)testBlock2 - (handle)zeroBlock - BlockSize(zeroBlock);
+    uint32 dist2 = (handle)testBlock4 - (handle)testBlock2 - BlockSize(testBlock2);
+    uint32 dist3 = (handle)testBlock6 - (handle)testBlock4 - BlockSize(testBlock4);
+    uint32 dist4 = (handle)testBlock7 - (handle)testBlock6 - BlockSize(testBlock6);
+    uint32 dist5 = (handle)testBlock9 - (handle)testBlock7 - BlockSize(testBlock7);
+   
+    OutputDebugStringA("\nPOST CONSOLIDATION: \n\n");
+    combinedSize = 0;
+    OutputDebugStringA("Zero Block: \n");
+    zeroBlockSize = BlockSize(zeroBlock);
+    combinedSize += zeroBlockSize;
+    for (uint32 i = 0; i < NumElements(zeroBlock); i++)
+    {
+        OutputDebugStringA(itoa(*(uint32*)GetElementAt(zeroBlock, i), buffer, 10));
+        OutputDebugStringA("\n");
+    }
+    OutputDebugStringA("Block2: \n");
+    testBlock2Size = BlockSize(testBlock2);
+    combinedSize += testBlock2Size;
+    for (uint32 i = 0; i < NumElements(testBlock2); i++)
+    {
+        OutputDebugStringA(itoa(*(uint32*)GetElementAt(testBlock2, i), buffer, 10));
+        OutputDebugStringA("\n");
+    }
+    OutputDebugStringA("Block4: \n");
+    testBlock4Size = BlockSize(testBlock4);
+    combinedSize += testBlock4Size;
+    for (uint32 i = 0; i < NumElements(testBlock4); i++)
+    {
+        OutputDebugStringA(itoa(*(uint32*)GetElementAt(testBlock4, i), buffer, 10));
+        OutputDebugStringA("\n");
+    }
+    OutputDebugStringA("Block6: \n");
+    testBlock6Size = BlockSize(testBlock6);
+    combinedSize += testBlock6Size;
+    for (uint32 i = 0; i < NumElements(testBlock6); i++)
+    {
+        OutputDebugStringA(itoa(*(uint32*)GetElementAt(testBlock6, i), buffer, 10));
+        OutputDebugStringA("\n");
+    }
+    OutputDebugStringA("Block7: \n");
+    testBlock7Size = BlockSize(testBlock7);
     combinedSize += testBlock7Size;
     for (uint32 i = 0; i < NumElements(testBlock7); i++)
     {
